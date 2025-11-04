@@ -1,0 +1,93 @@
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+
+test:
+  stage: test
+  image: eclipse-temurin:21-jdk
+  
+  services:
+    - name: pgvector/pgvector:pg16
+      alias: postgres
+  
+  variables:
+    POSTGRES_DB: rag
+    POSTGRES_USER: rag
+    POSTGRES_PASSWORD: rag
+    SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/rag
+    SPRING_DATASOURCE_USERNAME: rag
+    SPRING_DATASOURCE_PASSWORD: rag
+  
+  before_script:
+    - chmod +x gradlew
+  
+  script:
+    - ./gradlew test --tests com.astradesk.rag.service.RagServiceTest
+    - ./gradlew build -x test
+  
+  artifacts:
+    paths:
+      - build/libs/*.jar
+    expire_in: 1 week
+  
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - .gradle/
+
+build-docker:
+  stage: build
+  image: docker:24
+  
+  services:
+    - docker:24-dind
+  
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA -t $CI_REGISTRY_IMAGE:latest .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE:latest
+  
+  only:
+    - main
+    - develop
+
+deploy-staging:
+  stage: deploy
+  image: alpine:latest
+  
+  before_script:
+    - apk add --no-cache curl
+  
+  script:
+    - echo "Deploying to staging environment"
+    - curl -X POST $STAGING_WEBHOOK_URL
+  
+  only:
+    - develop
+  
+  when: manual
+
+deploy-production:
+  stage: deploy
+  image: alpine:latest
+  
+  before_script:
+    - apk add --no-cache curl
+  
+  script:
+    - echo "Deploying to production environment"
+    - curl -X POST $PRODUCTION_WEBHOOK_URL
+  
+  only:
+    - main
+  
+  when: manual
