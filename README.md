@@ -2,6 +2,8 @@
 
 A production-ready Spring Boot 4.0 application implementing Retrieval-Augmented Generation (RAG) with vector embeddings, semantic search, and multi-LLM provider support.
 
+> **📚 [Complete Documentation Index](docs/INDEX.md)** | **🚀 [Quick Start](docs/QUICK-START.md)** | **👨‍💻 [Developer Guide](docs/DEVELOPER_GUIDE.md)** | **🔧 [CI/CD Setup](docs/CI_CD_SETUP.md)**
+
 ## 📋 Overview
 
 **AstraDesk RAG Mini** is an enterprise-grade RAG system that:
@@ -437,8 +439,26 @@ docker exec astradesk-rag-mini-app curl -v http://minio:9000/minio/health/live
 2. Verify query k parameter isn't too large
 3. Monitor table statistics: `ANALYZE chunks;`
 
-## 📚 Resources
+## 📚 Documentation
 
+### Project Documentation
+- **[Quick Start Guide](docs/QUICK-START.md)** - Get started in 5 minutes
+- **[Developer Guide](docs/DEVELOPER_GUIDE.md)** - Comprehensive development guide
+- **[Quick Wins Implementation](docs/QUICK_WINS_IMPLEMENTATION.md)** - Recent improvements
+- **[Implementation Checklist](docs/IMPLEMENTATION_CHECKLIST.md)** - Verification steps
+- **[CI/CD Setup](docs/CI_CD_SETUP.md)** - GitHub Actions & GitLab CI/CD
+- **[CI/CD Quick Reference](docs/CI_CD_QUICK_REFERENCE.md)** - Quick commands
+
+### Frontend Documentation
+- **[Frontend Setup](docs/RAG-FRONTEND-SETUP.md)** - React/Next.js setup
+- **[Frontend Guide](docs/RAG-FRONTEND-GUIDE.md)** - Component usage
+- **[Integration Summary](docs/RAG-INTEGRATION-SUMMARY.md)** - Backend-Frontend integration
+
+### Project Status
+- **[Project Status](docs/PROJECT_STATUS.md)** - Current state and roadmap
+- **[Fixes Applied](docs/FIXES_APPLIED.md)** - Bug fixes and improvements
+
+### External Resources
 - [Spring AI Documentation](https://docs.spring.io/spring-ai/reference/)
 - [pgvector Documentation](https://github.com/pgvector/pgvector)
 - [OpenAI Embeddings API](https://platform.openai.com/docs/guides/embeddings)
