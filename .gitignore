@@ -1,0 +1,59 @@
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### IntelliJ IDEA ###
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/libraries/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### Node
+node_modules/
+!**/node_modules/
+!.pnp.*
+.npmrc
+package-lock.json
+npm-debug.log*
+yarn-error.log*
+.yarn-integrity
+.pnp.js
+.pnp.data.json
+.pnp.cjs
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+*.txt
+TODO.md.txt
+TODO.md
+TODO*.md
+
+### Mac OS ###
+.DS_Store

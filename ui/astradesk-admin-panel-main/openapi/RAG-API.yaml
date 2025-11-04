@@ -1,0 +1,524 @@
+openapi: 3.1.0
+info:
+  title: AstraDesk RAG API
+  version: 0.2.0
+  description: |
+    Production-ready Retrieval-Augmented Generation API for semantic search and document ingestion.
+    
+    ## Features
+    - **Semantic Search**: Vector-based similarity search across document collections
+    - **Document Ingestion**: ZIP archive processing with streaming progress
+    - **Multiple Formats**: PDF, HTML, Markdown, TXT support
+    - **Real-time Progress**: Server-Sent Events for ingestion status
+    - **Multi-provider LLM**: OpenAI, Spring AI, Fake (testing)
+    
+    ## Authentication
+    Currently API is public. Bearer token support planned for v1.0.
+    
+    ## Rate Limiting
+    - Search: 100 req/min per IP
+    - Ingest: 10 concurrent uploads
+  contact:
+    name: AstraDesk RAG Team
+    email: rag@astradesk.com
+  license:
+    name: MIT
+  x-logo:
+    url: https://raw.githubusercontent.com/astradesk/astradesk-rag-mini/main/public/logo.png
+
+servers:
+  - url: http://localhost:8080
+    description: Local development
+  - url: https://api.astradesk.com
+    description: Production (https)
+  - url: http://localhost:9000
+    description: MinIO S3 compatibility
+
+externalDocs:
+  description: Full documentation
+  url: https://github.com/astradesk/astradesk-rag-mini/blob/main/README.md
+
+tags:
+  - name: Search
+    description: Vector semantic search operations
+    externalDocs:
+      description: Search Guide
+      url: https://github.com/astradesk/astradesk-rag-mini#search-api
+  - name: Ingest
+    description: Document ingestion and processing
+    externalDocs:
+      description: Ingestion Guide
+      url: https://github.com/astradesk/astradesk-rag-mini#ingestion-api
+  - name: Health
+    description: Service health and status
+
+paths:
+  /docs/search:
+    get:
+      operationId: searchDocuments
+      tags:
+        - Search
+      summary: Semantic search across documents
+      description: |
+        Performs vector similarity search to find relevant document chunks.
+        
+        ### How it works:
+        1. Query is embedded using configured embeddings provider
+        2. Vector similarity search executed against pgvector index
+        3. Top-k most relevant chunks returned with similarity scores
+        4. Results ordered by relevance (highest score first)
+        
+        ### Performance:
+        - Average latency: 50-150ms
+        - Scales to 100k+ documents with IVFFlat index
+        - Tuned for k=5-10 optimal UX
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query text
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 1000
+          example: "How do I configure embeddings?"
+        - name: k
+          in: query
+          required: false
+          description: Number of results to return (default 5)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 5
+          example: 10
+        - name: collection
+          in: query
+          required: false
+          description: Filter by collection name (optional)
+          schema:
+            type: string
+          example: "documentation"
+      responses:
+        '200':
+          description: Search results with relevance scores
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChunkResult'
+                minItems: 0
+                maxItems: 100
+              examples:
+                success:
+                  summary: Successful search
+                  value:
+                    - id: 1
+                      docId: 10
+                      chunkIndex: 2
+                      pageFrom: 3
+                      pageTo: 4
+                      content: "Spring AI integration enables semantic search capabilities..."
+                      score: 0.92
+                    - id: 2
+                      docId: 11
+                      chunkIndex: 0
+                      pageFrom: 1
+                      pageTo: 1
+                      content: "Embeddings are high-dimensional vector representations..."
+                      score: 0.87
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Query parameter 'q' is required"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Database connection failed"
+
+  /ingest/zip:
+    post:
+      operationId: ingestZip
+      tags:
+        - Ingest
+      summary: Ingest and index ZIP archive
+      description: |
+        Uploads and processes a ZIP archive containing documents.
+        
+        ### Supported formats:
+        - **PDF** (.pdf) - Extracted via PDFBox 3.0.6
+        - **HTML** (.html, .htm) - Parsed with jsoup
+        - **Markdown** (.md, .markdown) - Converted to text
+        - **Plain Text** (.txt) - Direct ingestion
+        - **Word Documents** (.docx, .doc) - Via Apache POI
+        
+        ### Processing:
+        1. ZIP extracted to temporary directory
+        2. Each file processed sequentially
+        3. Text extracted and chunked with overlap
+        4. Chunks embedded using embeddings provider
+        5. Vectors stored in PostgreSQL with IVFFlat index
+        
+        ### Streaming Events:
+        - **RECEIVED**: ZIP file uploaded
+        - **PROCESSING**: File extraction in progress
+        - **INDEXED**: Document indexed to database
+        - **DONE**: All documents processed
+        
+        ### Storage:
+        - Original files stored in S3/MinIO
+        - Metadata in PostgreSQL
+        - Embeddings in pgvector
+        
+        ### Performance:
+        - Processing speed: 5-10 chunks/second
+        - Memory efficient with streaming
+        - Suitable for 100MB+ archives
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: ZIP archive file
+                collection:
+                  type: string
+                  description: Collection name for grouping (default "default")
+                  default: default
+                  example: documentation
+                maxLen:
+                  type: integer
+                  description: Maximum chunk length in characters (default 1200)
+                  default: 1200
+                  minimum: 100
+                  maximum: 5000
+                  example: 1200
+                overlap:
+                  type: integer
+                  description: Character overlap between chunks (default 200)
+                  default: 200
+                  minimum: 0
+                  maximum: 1000
+                  example: 200
+            encoding:
+              file:
+                contentType: application/zip
+      responses:
+        '200':
+          description: Streaming ingestion progress events
+          headers:
+            Transfer-Encoding:
+              description: chunked
+              schema:
+                type: string
+              example: chunked
+            Content-Type:
+              description: Server-Sent Events stream
+              schema:
+                type: string
+              example: text/event-stream; charset=UTF-8
+          content:
+            text/event-stream:
+              schema:
+                type: object
+                description: SSE stream of progress events
+              examples:
+                eventStream:
+                  summary: Example SSE stream
+                  value: |
+                    event: progress
+                    data: {"stage":"RECEIVED","file":"archive.zip","processed":1,"message":"ZIP received and queued for processing"}
+                    
+                    event: progress
+                    data: {"stage":"PROCESSING","file":"document.pdf","message":"Extracting text from PDF..."}
+                    
+                    event: progress
+                    data: {"stage":"INDEXED","file":"document.pdf","page":1,"processed":5,"total":10,"message":"Embedded 5 chunks"}
+                    
+                    event: progress
+                    data: {"stage":"DONE","file":"archive.zip","total":150,"message":"Ingestion complete: 150 chunks indexed"}
+        '400':
+          description: Invalid request (missing file, invalid format)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "ZIP file required in 'file' field"
+        '413':
+          description: File too large (exceeds max upload size)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Upload exceeds maximum size of 1GB"
+        '500':
+          description: Server error during processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                detail: "Failed to extract PDF text: corrupted file"
+
+  /health:
+    get:
+      operationId: getHealth
+      tags:
+        - Health
+      summary: Health check endpoint
+      description: Returns service health status and component availability
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: UP
+                components:
+                  db:
+                    status: UP
+                  diskSpace:
+                    status: UP
+                  livenessState:
+                    status: UP
+                  readinessState:
+                    status: UP
+        '503':
+          description: Service degraded or down
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: DOWN
+                components:
+                  db:
+                    status: DOWN
+                  diskSpace:
+                    status: UP
+
+components:
+  schemas:
+    ChunkResult:
+      type: object
+      description: Document chunk with embedding relevance score
+      required:
+        - id
+        - docId
+        - chunkIndex
+        - content
+        - score
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique chunk ID
+          example: 1
+        docId:
+          type: integer
+          format: int64
+          description: Parent document ID
+          example: 10
+        chunkIndex:
+          type: integer
+          description: Sequential chunk number within document
+          example: 2
+        pageFrom:
+          type: integer
+          nullable: true
+          description: Starting page number (PDF only)
+          example: 3
+        pageTo:
+          type: integer
+          nullable: true
+          description: Ending page number (PDF only)
+          example: 4
+        content:
+          type: string
+          description: Chunk text content
+          example: "Spring AI integration enables semantic search capabilities through pgvector..."
+        score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Relevance score (0-1, higher is more relevant)
+          example: 0.92
+
+    ProgressEvent:
+      type: object
+      description: Ingestion progress event (Server-Sent Event payload)
+      required:
+        - stage
+        - message
+      properties:
+        stage:
+          type: string
+          enum:
+            - RECEIVED
+            - PROCESSING
+            - INDEXED
+            - ERROR
+            - DONE
+          description: Current processing stage
+          example: INDEXED
+        file:
+          type: string
+          description: Current file being processed
+          example: document.pdf
+        page:
+          type: integer
+          description: Current page number (PDF only)
+          example: 3
+        processed:
+          type: integer
+          description: Number of chunks processed so far
+          example: 45
+        total:
+          type: integer
+          description: Total chunks expected
+          example: 150
+        message:
+          type: string
+          description: Human-readable status message
+          example: "Embedded 5 chunks, 145 remaining"
+        error:
+          type: string
+          nullable: true
+          description: Error message if stage is ERROR
+          example: null
+
+    ErrorResponse:
+      type: object
+      description: Error response following RFC 7807 Problem Details
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          description: Error description
+          example: "Query parameter 'q' is required"
+        status:
+          type: integer
+          description: HTTP status code (optional)
+          example: 400
+        title:
+          type: string
+          description: Error title (optional)
+          example: "Bad Request"
+        instance:
+          type: string
+          format: uri
+          description: Request URI (optional)
+          example: "/docs/search?k=5"
+
+    HealthResponse:
+      type: object
+      description: Service health status
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - UP
+            - DOWN
+            - DEGRADED
+          description: Overall health status
+          example: UP
+        components:
+          type: object
+          description: Individual component status
+          additionalProperties:
+            type: object
+            properties:
+              status:
+                type: string
+                enum:
+                  - UP
+                  - DOWN
+                  - DEGRADED
+              details:
+                type: object
+                additionalProperties: true
+          example:
+            db:
+              status: UP
+            diskSpace:
+              status: UP
+
+  # Security schemes placeholder for future authentication
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Future: JWT bearer token authentication"
+
+x-code-samples:
+  - lang: TypeScript
+    label: Semantic Search
+    source: |
+      import { useRagSearch } from '@/hooks/use-rag';
+      
+      export function SearchExample() {
+        const { search, isLoading, error } = useRagSearch();
+        
+        const results = await search({
+          q: "How does pgvector work?",
+          k: 5
+        });
+        
+        return (
+          <div>
+            {results.map(chunk => (
+              <div key={chunk.id}>
+                <p>{chunk.content}</p>
+                <span>Score: {(chunk.score * 100).toFixed(1)}%</span>
+              </div>
+            ))}
+          </div>
+        );
+      }
+  
+  - lang: TypeScript
+    label: Document Ingestion
+    source: |
+      import { useRagIngest } from '@/hooks/use-rag';
+      
+      export function UploadExample() {
+        const { ingest, progress, error } = useRagIngest();
+        
+        const handleUpload = async (file: File) => {
+          await ingest(file, {
+            collection: "docs",
+            maxLen: 1200,
+            overlap: 200
+          });
+        };
+        
+        return (
+          <div>
+            <input type="file" onChange={e => handleUpload(e.target.files?.[0]!)} accept=".zip" />
+            <p>{progress.message}</p>
+            <p>Processed: {progress.processed}/{progress.total}</p>
+          </div>
+        );
+      }
