@@ -12,6 +12,8 @@ import org.apache.pdfbox.pdfparser.PDFParser;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.Loader;
 import org.jsoup.Jsoup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
@@ -25,6 +27,8 @@ import java.util.zip.ZipInputStream;
 
 @Service
 public class ZipIngestService {
+    private static final Logger log = LoggerFactory.getLogger(ZipIngestService.class);
+    
     private final DocumentJdbcRepository docs;
     private final ChunkJdbcRepository chunks;
     private final Embeddings embeddings;
@@ -39,11 +43,15 @@ public class ZipIngestService {
     public Flux<ProgressEvent> ingestZipAsStream(MultipartFile zip, String collection, int maxLen, int overlap) {
         Sinks.Many<ProgressEvent> sink = Sinks.many().unicast().onBackpressureBuffer();
         new Thread(() -> {
+            int total = 0;
             try (InputStream is = zip.getInputStream(); ZipInputStream zis = new ZipInputStream(is)) {
-                ZipEntry e; int total=0; List<ZipEntry> entries = new ArrayList<>();
-                while ((e = zis.getNextEntry()) != null) { if(!e.isDirectory()) entries.add(e); }
-                // musimy ponownie otworzyć, idziemy dalej przez strumień
-            } catch (Exception ignore) {}
+                ZipEntry e;
+                while ((e = zis.getNextEntry()) != null) {
+                    if (!e.isDirectory()) total++;
+                }
+            } catch (Exception e) {
+                log.warn("Failed to count ZIP entries: {}", e.getMessage());
+            }
             try (InputStream is = zip.getInputStream(); ZipInputStream zis = new ZipInputStream(is)) {
                 ZipEntry entry; int processed = 0;
                 while ((entry = zis.getNextEntry()) != null) {
