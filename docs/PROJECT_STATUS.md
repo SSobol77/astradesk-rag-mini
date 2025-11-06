@@ -243,11 +243,18 @@ Content-Type: multipart/form-data
    - Currently uses OpenAI HTTP implementation by default
    - Spring AI adapter provided for future upgrades
 
-2. **Deprecated API Warning**: One benign deprecation in GlobalExceptionHandler
+2. **WebFlux + JDBC/Hikari**: JDBC calls are blocking in reactive stack
+   - Works correctly but JDBC operations block threads
+   - For high-traffic scenarios, consider R2DBC (reactive database driver)
+   - Current HikariCP pool (max 10) handles moderate load well
+   - Monitor thread pool usage under load
+
+3. **Deprecated API Warning**: One benign deprecation in GlobalExceptionHandler
    - Does not affect functionality
+   - Ticket recommended for cleanup in next update
    - No action required (Spring will provide migration path)
 
-3. **PDF Processing**: Uses PDFBox 3.0.6 API (updated from legacy)
+4. **PDF Processing**: Uses PDFBox 3.0.6 API (updated from legacy)
    - All API calls corrected
    - Full PDF text extraction working
 

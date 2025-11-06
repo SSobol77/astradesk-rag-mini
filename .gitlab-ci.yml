@@ -29,7 +29,8 @@ test:
   
   script:
     - ./gradlew test --tests com.astradesk.rag.service.RagServiceTest
-    - ./gradlew build -x test
+    - ./gradlew test --tests com.astradesk.rag.integration.*
+    - ./gradlew build
   
   artifacts:
     paths:

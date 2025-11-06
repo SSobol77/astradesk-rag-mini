@@ -357,8 +357,19 @@ rag:
 
 ### Database Tuning
 ```bash
-# Update table statistics (before large searches)
+# IMPORTANT: Update table statistics after large ingests
+# This ensures optimal query planning for vector searches
 docker exec astradesk-rag-mini-db psql -U rag -d rag -c "ANALYZE chunks;"
+
+# Verify embedding dimensions match schema (default: 1536)
+docker exec astradesk-rag-mini-db psql -U rag -d rag << EOF
+SELECT 
+    column_name,
+    data_type,
+    udt_name
+FROM information_schema.columns 
+WHERE table_name = 'chunks' AND column_name = 'embedding';
+EOF
 
 # Monitor index size
 docker exec astradesk-rag-mini-db psql -U rag -d rag << EOF
@@ -370,6 +381,18 @@ FROM pg_tables
 WHERE schemaname = 'public';
 EOF
 ```
+
+### Vector Dimension Consistency
+**Critical**: Ensure embedding dimensions match across:
+- Schema: `VECTOR(1536)` in `schema.sql`
+- Config: `rag.embedding-dim: 1536` in `application.yml`
+- Provider: OpenAI `text-embedding-3-small` = 1536 dims
+
+**To change dimensions:**
+1. Update `schema.sql`: `embedding VECTOR(3072)`
+2. Update `application.yml`: `rag.embedding-dim: 3072`
+3. Use compatible model: `text-embedding-3-large`
+4. Recreate database or migrate existing data
 
 ---
 
@@ -393,9 +416,14 @@ export SPRING_PROFILES_ACTIVE=dev  # or add to application.yml
 
 ### "Slow vector searches"
 **Solution**: 
-1. Check IVFFlat index: `ANALYZE chunks;`
-2. Reduce `maxLen` to create fewer chunks
-3. Increase PostgreSQL `shared_buffers` if memory available
+1. **Run ANALYZE after large ingests**: `ANALYZE chunks;`
+2. Verify IVFFlat index exists and is being used
+3. Reduce `maxLen` to create fewer chunks
+4. Increase PostgreSQL `shared_buffers` if memory available
+5. Tune IVFFlat `lists` parameter based on dataset size:
+   - <10k chunks: `lists=10`
+   - 10k-100k: `lists=100` (default)
+   - >100k: `lists=300+`
 
 ---
 

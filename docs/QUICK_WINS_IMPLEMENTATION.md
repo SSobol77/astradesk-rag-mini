@@ -8,7 +8,7 @@ All 10 quick wins have been successfully implemented. Below is a detailed breakd
 
 **File:** `src/main/java/com/astradesk/rag/config/ApiKeyValidator.java`
 
-- Servlet filter that validates `X-API-Key` header
+- WebFlux WebFilter that validates `X-API-Key` header
 - Configurable via `RAG_API_KEY` environment variable
 - If not set, endpoints remain publicly accessible
 - Health endpoint always accessible without key
@@ -186,7 +186,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
 **File:** `src/main/java/com/astradesk/rag/config/RequestLoggingFilter.java`
 
 - Logs all HTTP requests with method, URI, status, and duration
-- Automatic via servlet filter
+- Automatic via WebFlux WebFilter (reactive)
 
 **Log format:**
 ```

@@ -38,15 +38,14 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     
-    - name: Run tests
+    - name: Run unit tests
       run: ./gradlew test --tests com.astradesk.rag.service.RagServiceTest
-      env:
-        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/rag
-        SPRING_DATASOURCE_USERNAME: rag
-        SPRING_DATASOURCE_PASSWORD: rag
+    
+    - name: Run integration tests
+      run: ./gradlew test --tests com.astradesk.rag.integration.*
     
     - name: Build with Gradle
-      run: ./gradlew build -x test
+      run: ./gradlew build
 
   build-docker:
     needs: test

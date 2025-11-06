@@ -22,14 +22,32 @@ A production-ready Spring Boot 4.0 application implementing Retrieval-Augmented 
 
 | Component | Technology | Version |
 |-----------|-----------|---------|
-| **Framework** | Spring Boot | 4.0.0-RC1 |
+| **Framework** | Spring Boot | 3.4.0 |
 | **Java** | Temurin | 21 LTS |
 | **Database** | PostgreSQL + pgvector | 16/17 |
-| **Vector Store** | pgvector | 0.8.1+ |
+| **Vector Store** | pgvector | 0.1.6 |
 | **AI/ML** | Spring AI + OpenAI | 0.8.1 |
 | **Storage** | AWS S3 SDK v2 / MinIO | 2.37.3 |
-| **Build** | Gradle | 8.10.2 |
+| **Build** | Gradle | 8.10.2+ |
 | **Container** | Docker | Multi-stage |
+| **Observability** | Micrometer + OpenTelemetry | Latest |
+
+### Support Matrix
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| **WebFlux (Reactive)** | ✅ Stable | All filters use WebFilter |
+| **JDBC + HikariCP** | ✅ Stable | Blocking calls, consider R2DBC for high traffic |
+| **OpenAI Embeddings** | ✅ Stable | text-embedding-3-small (1536d) |
+| **OpenAI Chat** | ✅ Stable | gpt-4o-mini |
+| **Spring AI** | ⚠️ Optional | API compatibility issues, use OpenAI HTTP |
+| **pgvector** | ✅ Stable | IVFFlat index, cosine distance |
+| **S3/MinIO** | ✅ Stable | AWS SDK v2 |
+| **Rate Limiting** | ✅ Stable | Token bucket, in-memory |
+| **OpenTelemetry** | ✅ Stable | OTLP exporter |
+| **TestContainers** | ✅ Stable | Integration tests |
+| **Prometheus** | ✅ Stable | Metrics export |
+| **Docker Health** | ✅ Stable | /health endpoint |
 
 ### Package Structure
 
@@ -489,4 +507,4 @@ For issues or questions:
 
 ---
 
-**Last Updated:** 2025-11-04 | **Version:** 0.2.0 | **Status:** Production Ready ✅
+**Last Updated:** 2025-01-XX | **Version:** 1.0.0 | **Status:** Production Ready ✅

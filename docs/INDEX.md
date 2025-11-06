@@ -19,6 +19,8 @@ Complete documentation for the AstraDesk RAG Mini project.
 - **[Quick Wins Implementation](QUICK_WINS_IMPLEMENTATION.md)** - 10 production improvements
 - **[Implementation Checklist](IMPLEMENTATION_CHECKLIST.md)** - Verification steps
 - **[Implementation Complete](IMPLEMENTATION_COMPLETE.md)** - Summary report
+- **[Next Steps Complete](NEXT_STEPS_COMPLETE.md)** - Rate limiting, OpenTelemetry, integration tests
+- **[Documentation Fixes](DOCUMENTATION_FIXES.md)** - Consistency fixes applied
 
 ### CI/CD
 - **[CI/CD Setup Guide](CI_CD_SETUP.md)** - GitHub Actions & GitLab CI/CD

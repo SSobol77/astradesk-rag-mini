@@ -1,0 +1,30 @@
+[0;1;32m●[0m docker-desktop.service - Docker Desktop
+     Loaded: loaded (]8;;file://ha2o/usr/lib/systemd/user/docker-desktop.service/usr/lib/systemd/user/docker-desktop.service]8;;; [0;1;32menabled[0m; preset: [0;1;32menabled[0m)
+     Active: [0;1;32mactive (running)[0m since Wed 2025-11-05 13:06:06 CET; 12h ago
+   Main PID: 2327 (com.docker.back)
+      Tasks: 149[0;38;5;245m (limit: 9278)[0m
+     Memory: 1.7G
+        CPU: 12h 23min 31.020s
+     CGroup: /user.slice/user-1000.slice/user@1000.service/app.slice/docker-desktop.service
+             ├─[0;38;5;245m2327 /opt/docker-desktop/bin/com.docker.backend[0m
+             ├─[0;38;5;245m2344 /opt/docker-desktop/bin/com.docker.backend services[0m
+             ├─[0;38;5;245m2390 /opt/docker-desktop/bin/com.docker.build --log-no-timestamp[0m
+             ├─[0;38;5;245m2397 "/opt/docker-desktop/Docker Desktop" --analytics-enabled=true --name=tray[0m
+             ├─[0;38;5;245m2407 /opt/docker-desktop/bin/virtiofsd --socket-path=/home/ssb/.docker/desktop/virtiofs.sock0 --cache=auto --shared-dir=/home --sandbox=none --announce-submounts --xattr --xattrmap=:prefix:all::user.docker.desktop.::bad:all::: --translate-uid squash-guest:0:1000:4294967295 --translate-gid squash-guest:0:1000:4294967295[0m
+             ├─[0;38;5;245m2435 /usr/bin/qemu-system-x86_64 -accel kvm -cpu host -machine q35 -m 4096 -smp 4 -kernel /opt/docker-desktop/linuxkit/kernel -append "init=/init loglevel=1 root=/dev/vdb rootfstype=erofs ro vsyscall=emulate panic=0 eth0.dhcp eth1.dhcp linuxkit.unified_cgroup_hierarchy=1    virtio_net.disable_csum=1 vpnkit.connect=tcp+connect://192.168.65.1:1999 console=ttyS0" -serial pipe:/tmp/qemu-console2654104929/fifo -netdev socket,id=net1,fd=3 -device virtio-net-pci,netdev=net1,mac=a2:e7:ef:8c:9f:94 -vga none -nographic -monitor none -drive if=none,file=/home/ssb/.docker/desktop/vms/0/data/Docker.raw,format=raw,id=hd0 -device virtio-blk-pci,drive=hd0,serial=dummyserial -drive if=none,file=/opt/docker-desktop/linuxkit/boot.img,format=raw,id=hd1,readonly=on -device virtio-blk-pci,drive=hd1,serial=dummyserial -object memory-backend-memfd,id=mem,size=4096M,share=on -numa node,memdev=mem -chardev socket,id=char0,path=/home/ssb/.docker/desktop/virtiofs.sock0 -device vhost-user-fs-pci,queue-size=1024,chardev=char0,tag=virtiofs0[0m
+             ├─[0;38;5;245m2451 "/opt/docker-desktop/Docker Desktop" --type=zygote --no-zygote-sandbox[0m
+             ├─[0;38;5;245m2452 "/opt/docker-desktop/Docker Desktop" --type=zygote[0m
+             ├─[0;38;5;245m2457 "/opt/docker-desktop/Docker Desktop" --type=zygote[0m
+             ├─[0;38;5;245m2910 /proc/self/exe --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --enable-crash-reporter=e3dbff2d-7656-4606-a969-d02f68d70c71,no_channel "--user-data-dir=/home/ssb/.config/Docker Desktop" --standard-schemes=app --secure-schemes=app --fetch-schemes=dd --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,5844785558541967286,11507148370875083903,262144 --enable-features=PdfUseShowSaveFilePicker --disable-features=ScreenAIOCREnabled,SpareRendererForSitePerProcess --variations-seed-version[0m
+             └─[0;38;5;245m3106 "/opt/docker-desktop/Docker Desktop" --type=zygote --no-zygote-sandbox[0m
+
+Nov 06 02:05:49 ha2o com.docker.backend[2327]: [01:05:49.072969757Z][vm.apiproxy           ] [46776] << GET /v1.44/containers/json?all=1&filters=%7B%22label%22%3A%7B%22io.kubernetes.docker.type%3Dcontainer%22%3Atrue%7D%7D (3.362429ms)
+Nov 06 02:05:50 ha2o com.docker.backend[2327]: [01:05:50.077640258Z][vm.apiproxy           ] [46777] >> GET /v1.44/containers/json?all=1&filters=%7B%22label%22%3A%7B%22io.kubernetes.docker.type%3Dpodsandbox%22%3Atrue%7D%7D
+Nov 06 02:05:50 ha2o com.docker.backend[2327]: [01:05:50.112132414Z][vm.dockerd            ] [46777] 2025/11/06 01:05:50 traces export: rpc error: code = Unimplemented desc = unknown service opentelemetry.proto.collector.trace.v1.TraceService
+Nov 06 02:05:50 ha2o com.docker.backend[2327]: [01:05:50.166347099Z][vm.apiproxy           ] [46777] << GET /v1.44/containers/json?all=1&filters=%7B%22label%22%3A%7B%22io.kubernetes.docker.type%3Dpodsandbox%22%3Atrue%7D%7D (88.494645ms)
+Nov 06 02:05:50 ha2o com.docker.backend[2327]: [01:05:50.169889474Z][vm.apiproxy           ] [46777] >> GET /v1.44/containers/json?all=1&filters=%7B%22label%22%3A%7B%22io.kubernetes.docker.type%3Dcontainer%22%3Atrue%7D%7D
+Nov 06 02:05:50 ha2o com.docker.backend[2327]: [01:05:50.175134607Z][vm.apiproxy           ] [46777] << GET /v1.44/containers/json?all=1&filters=%7B%22label%22%3A%7B%22io.kubernetes.docker.type%3Dcontainer%22%3Atrue%7D%7D (4.195241ms)
+Nov 06 02:05:50 ha2o com.docker.backend[2327]: [01:05:50.420563529Z][vm.apiproxy           ] [46777] >> GET /v1.44/containers/json?filters=%7B%22label%22%3A%7B%22io.kubernetes.docker.type%3Dpodsandbox%22%3Atrue%7D%7D
+Nov 06 02:05:50 ha2o com.docker.backend[2327]: [01:05:50.480462172Z][vm.apiproxy           ] [46777] << GET /v1.44/containers/json?filters=%7B%22label%22%3A%7B%22io.kubernetes.docker.type%3Dpodsandbox%22%3Atrue%7D%7D (60.116043ms)
+Nov 06 02:05:50 ha2o com.docker.backend[2327]: [01:05:50.483724299Z][vm.apiproxy           ] [46777] >> GET /v1.44/containers/json?all=1&filters=%7B%22label%22%3A%7B%22io.kubernetes.docker.type%3Dcontainer%22%3Atrue%7D%2C%22status%22%3A%7B%22running%22%3Atrue%7D%7D
+Nov 06 02:05:50 ha2o com.docker.backend[2327]: [01:05:50.487346766Z][vm.apiproxy           ] [46777] << GET /v1.44/containers/json?all=1&filters=%7B%22label%22%3A%7B%22io.kubernetes.docker.type%3Dcontainer%22%3Atrue%7D%2C%22status%22%3A%7B%22running%22%3Atrue%7D%7D (3.330009ms)
