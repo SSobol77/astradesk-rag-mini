@@ -1,3 +1,26 @@
+## Makefile - helper targets for local development
+# Use `make build-docker` to run Gradle inside a JDK 21 container (no system Java change)
+
+.PHONY: build build-docker test test-docker clean
+
+BUILD_IMAGE ?= eclipse-temurin:21-jdk
+
+build:
+	./gradlew clean build
+
+test:
+	./gradlew test
+
+clean:
+	./gradlew clean
+
+build-docker:
+	@echo "Running Gradle build inside Docker (JDK 21)..."
+	./scripts/build-in-docker.sh ./gradlew clean build
+
+test-docker:
+	@echo "Running Gradle tests inside Docker (JDK 21)..."
+	./scripts/build-in-docker.sh ./gradlew test
 .PHONY: help build test clean run docker-build docker-run docker-stop deploy
 
 help:
