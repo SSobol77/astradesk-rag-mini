@@ -14,9 +14,22 @@ public class ChunkJdbcRepository {
     private final JdbcTemplate jdbc;
     public ChunkJdbcRepository(JdbcTemplate jdbc) { this.jdbc = jdbc; }
 
-    public void insertChunk(long docId, int idx, Integer pFrom, Integer pTo, String sourceKey, String content, float[] emb) {
-        jdbc.update("INSERT INTO chunks(doc_id, chunk_index, page_from, page_to, source_key, content, embedding) VALUES (?,?,?,?,?,?,?)",
-                docId, idx, pFrom, pTo, sourceKey, content, new PGvector(emb));
+    public long insertChunk(long docId, int idx, Integer pFrom, Integer pTo, String sourceKey, String content, float[] emb) {
+        String sql = "INSERT INTO chunks(doc_id, chunk_index, page_from, page_to, source_key, content, embedding) VALUES (?,?,?,?,?,?,?)";
+        var keyHolder = new org.springframework.jdbc.support.GeneratedKeyHolder();
+        jdbc.update(con -> {
+            var ps = con.prepareStatement(sql, new String[]{"id"});
+            ps.setLong(1, docId);
+            ps.setInt(2, idx);
+            if (pFrom != null) ps.setInt(3, pFrom); else ps.setNull(3, java.sql.Types.INTEGER);
+            if (pTo != null) ps.setInt(4, pTo); else ps.setNull(4, java.sql.Types.INTEGER);
+            ps.setString(5, sourceKey);
+            ps.setString(6, content);
+            ps.setObject(7, new PGvector(emb));
+            return ps;
+        }, keyHolder);
+        Number key = keyHolder.getKey();
+        return key != null ? key.longValue() : -1L;
     }
 
     public List<ChunkRecord> findSimilar(float[] query, int k) {

@@ -1,6 +1,6 @@
 # AstraDesk RAG Mini - Retrieval-Augmented Generation Application
 
-A production-ready Spring Boot 4.0 application implementing Retrieval-Augmented Generation (RAG) with vector embeddings, semantic search, and multi-LLM provider support.
+A production-ready Spring Boot 3.4.0 application implementing Retrieval-Augmented Generation (RAG) with vector embeddings, semantic search, and multi-LLM provider support.
 
 > **📚 [Complete Documentation Index](docs/INDEX.md)** | **🚀 [Quick Start](docs/QUICK-START.md)** | **👨‍💻 [Developer Guide](docs/DEVELOPER_GUIDE.md)** | **🔧 [CI/CD Setup](docs/CI_CD_SETUP.md)**
 
@@ -27,8 +27,8 @@ A production-ready Spring Boot 4.0 application implementing Retrieval-Augmented 
 | **Database** | PostgreSQL + pgvector | 16/17 |
 | **Vector Store** | pgvector | 0.1.6 |
 | **AI/ML** | Spring AI + OpenAI | 0.8.1 |
-| **Storage** | AWS S3 SDK v2 / MinIO | 2.37.3 |
-| **Build** | Gradle | 8.10.2+ |
+| **Storage** | AWS S3 SDK v2 / MinIO | 2.38.2 |
+| **Build** | Gradle | 8.14 |
 | **Container** | Docker | Multi-stage |
 | **Observability** | Micrometer + OpenTelemetry | Latest |
 
@@ -47,7 +47,8 @@ A production-ready Spring Boot 4.0 application implementing Retrieval-Augmented 
 | **OpenTelemetry** | ✅ Stable | OTLP exporter |
 | **TestContainers** | ✅ Stable | Integration tests |
 | **Prometheus** | ✅ Stable | Metrics export |
-| **Docker Health** | ✅ Stable | /health endpoint |
+| **Docker Health** | ✅ Stable | /api/v1/health endpoint |
+| **API Versioning** | ✅ Stable | /api/v1 prefix |
 
 ### Package Structure
 
@@ -74,8 +75,9 @@ com.astradesk.rag
 │   ├── S3StorageService
 │   └── GlobalExceptionHandler
 ├── model/              # Data models
-│   ├── ChunkRecord
-│   └── ProgressEvent
+│   ├── ChunkRecord      (search results)
+│   ├── ProgressEvent    (SSE ingestion events - 7 fields)
+│   └── HealthResponse   (health check - 3 fields)
 └── util/               # Utilities
     └── Chunker
 ```
@@ -84,48 +86,57 @@ com.astradesk.rag
 
 ### Prerequisites
 - **Java 21+** (OpenJDK Temurin)
-- **Docker & Docker Compose**
+- **Docker**
 - **OpenAI API Key** (optional, for production use)
 
-### 1. Local Development Setup
+### 1. Quick Start (Recommended)
 
 ```bash
-# Clone and navigate
-git clone <repository>
-cd astradesk-rag-mini
-
-# Start PostgreSQL + MinIO
-docker-compose up -d
-
 # Build the project
-./gradlew clean build
+docker run --rm -v "$PWD":/workspace -w /workspace \
+  eclipse-temurin:21-jdk bash -c "./gradlew clean build -x test"
 
-# Run tests
-./gradlew test
+# Start all services
+./QUICK_START.sh
 
-# Start the application
-./gradlew bootRun
+# Initialize database
+./init-database-docker.sh
+
+# Test API v1
+curl "http://localhost:8081/api/v1/health"
 ```
 
-### 2. Using Docker
+### 2. Manual Setup
 
 ```bash
-# Build image
-docker build -t astradesk-rag:latest .
+# Start services
+docker network create astradesk-rag
+docker run -d --name rag-db --network astradesk-rag \
+  -e POSTGRES_DB=rag -e POSTGRES_USER=rag -e POSTGRES_PASSWORD=rag \
+  -p 5432:5432 pgvector/pgvector:pg16
 
-# Run with docker-compose
-OPENAI_API_KEY=sk-... docker-compose up
+# Initialize database
+./init-database-docker.sh rag-db
+
+# Start application
+docker run -d --name rag-app --network astradesk-rag -p 8081:8080 \
+  -e SPRING_DATASOURCE_URL=jdbc:postgresql://rag-db:5432/rag \
+  -e RAG_PROVIDER_EMBEDDINGS=fake -e RAG_PROVIDER_CHAT=fake \
+  -v "$PWD":/workspace -w /workspace eclipse-temurin:21-jdk \
+  bash -c "java -jar build/libs/astradesk-rag-mini-0.2.0.jar"
 ```
 
-The application will be available at `http://localhost:8080`
+The application will be available at `http://localhost:8081`
 
 ## 📖 API Endpoints
+
+> **Note**: All endpoints use `/api/v1` prefix. See [API Migration Guide](docs/API_MIGRATION_V1.md) for details.
 
 ### Document Search
 
 **Request:**
 ```http
-GET /docs/search?q=Spring%20AI&k=5
+GET /api/v1/docs/search?q=Spring%20AI&k=5
 ```
 
 **Parameters:**
@@ -151,7 +162,7 @@ GET /docs/search?q=Spring%20AI&k=5
 
 **Request:**
 ```http
-POST /ingest/zip?collection=docs&maxLen=1200&overlap=200
+POST /api/v1/ingest/zip?collection=docs&maxLen=1200&overlap=200
 Content-Type: multipart/form-data
 
 file=@archive.zip
@@ -166,13 +177,13 @@ file=@archive.zip
 **Response (Server-Sent Events):**
 ```
 event: progress
-data: {"stage":"RECEIVED","file":"document.pdf","processed":1,"message":"processing"}
+data: {"stage":"RECEIVED","file":"document.pdf","processed":1,"message":"processing","error":null}
 
 event: progress
-data: {"stage":"INDEXED","file":"document.pdf","page":1,"processed":1,"total":10,"message":"ok"}
+data: {"stage":"INDEXED","file":"document.pdf","page":1,"processed":1,"total":10,"message":"ok","error":null}
 
 event: progress
-data: {"stage":"DONE","file":"archive.zip","message":"finished"}
+data: {"stage":"DONE","file":"archive.zip","message":"finished","error":null}
 ```
 
 ## ⚙️ Configuration
@@ -328,18 +339,22 @@ public class RagServiceTest {
 
 ### Manual API Testing
 
-**Search:**
+**Automated Test:**
 ```bash
-curl "http://localhost:8080/docs/search?q=AI&k=3"
+./test-api-v1.sh 8081
 ```
 
-**Ingest (with streaming):**
+**Manual Tests:**
 ```bash
-curl -X POST \
-  -F "file=@docs.zip" \
-  -F "collection=my-docs" \
-  "http://localhost:8080/ingest/zip" \
-  --no-buffer
+# Health
+curl "http://localhost:8081/api/v1/health"
+
+# Search
+curl "http://localhost:8081/api/v1/docs/search?q=AI&k=3"
+
+# Ingest
+curl -X POST -F "file=@docs.zip" \
+  "http://localhost:8081/api/v1/ingest/zip" --no-buffer
 ```
 
 ## 📊 Performance Considerations
@@ -453,6 +468,41 @@ docker exec astradesk-rag-mini-app curl -v http://minio:9000/minio/health/live
 ```
 
 ### Slow Searches
+### Java compatibility: "IllegalArgumentException: 25.0.1"
+
+If the Gradle build fails with an error that includes a Java version like `25.0.1` (for example, an exception during Gradle script evaluation that mentions `JavaVersion.parse`), your system JDK is newer than the Kotlin/Gradle tooling expects. The project requires Java 21 for the Gradle runtime. Options to resolve:
+
+- Install and use Temurin/OpenJDK 21 and set `JAVA_HOME` before running Gradle:
+
+```bash
+# Example using SDKMAN (recommended for developers):
+curl -s "https://get.sdkman.io" | bash
+source "$HOME/.sdkman/bin/sdkman-init.sh"
+sdk install java 21.0.0-tem
+sdk use java 21.0.0-tem
+./gradlew clean build
+```
+
+- Install Temurin 21 via OS package manager (Debian/Ubuntu example):
+
+```bash
+# Adoptium repo install (Debian/Ubuntu)
+wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | sudo apt-key add -
+echo 'deb https://packages.adoptium.net/artifactory/deb $(lsb_release -cs) main' | sudo tee /etc/apt/sources.list.d/adoptium.list
+sudo apt-get update
+sudo apt-get install -y temurin-21-jdk
+export JAVA_HOME="/usr/lib/jvm/temurin-21-jdk"
+./gradlew clean build
+```
+
+- Use a Docker fallback to run the Gradle wrapper inside a JDK 21 container:
+
+```bash
+docker run --rm -v "$PWD":/workspace -w /workspace eclipse-temurin:21-jdk bash -c "./gradlew clean build"
+```
+
+This avoids changing your system Java and is useful for CI or one-off builds.
+
 1. Check IVFFlat index configuration
 2. Verify query k parameter isn't too large
 3. Monitor table statistics: `ANALYZE chunks;`
@@ -462,6 +512,10 @@ docker exec astradesk-rag-mini-app curl -v http://minio:9000/minio/health/live
 ### Project Documentation
 - **[Quick Start Guide](docs/QUICK-START.md)** - Get started in 5 minutes
 - **[Developer Guide](docs/DEVELOPER_GUIDE.md)** - Comprehensive development guide
+- **[API Migration Guide](docs/API_MIGRATION_V1.md)** - v1 API changes and migration
+- **[Database Setup](DATABASE_SETUP.md)** - Database initialization scripts
+- **[Local Development Checklist](docs/LOCAL_DEVELOPMENT_CHECKLIST.md)** - Minimal local setup and exact build versions
+- **[Database Tuning Guide](docs/DATABASE_TUNING_GUIDE.md)** - PostgreSQL, pgvector, IVFFlat optimization
 - **[Quick Wins Implementation](docs/QUICK_WINS_IMPLEMENTATION.md)** - Recent improvements
 - **[Implementation Checklist](docs/IMPLEMENTATION_CHECKLIST.md)** - Verification steps
 - **[CI/CD Setup](docs/CI_CD_SETUP.md)** - GitHub Actions & GitLab CI/CD
@@ -475,6 +529,10 @@ docker exec astradesk-rag-mini-app curl -v http://minio:9000/minio/health/live
 ### Project Status
 - **[Project Status](docs/PROJECT_STATUS.md)** - Current state and roadmap
 - **[Fixes Applied](docs/FIXES_APPLIED.md)** - Bug fixes and improvements
+- **[Integration Fixes](docs/INTEGRATION_FIXES_2025_01_24.md)** - Recent integration improvements
+- **[Build Success](BUILD_SUCCESS.md)** - Build verification results
+- **[Deployment Success](DEPLOYMENT_SUCCESS.md)** - Deployment verification
+- **[Verification Checklist](VERIFICATION_CHECKLIST.md)** - Complete verification steps
 
 ### External Resources
 - [Spring AI Documentation](https://docs.spring.io/spring-ai/reference/)
@@ -503,8 +561,19 @@ This project is licensed under the MIT License - see LICENSE file for details.
 For issues or questions:
 1. Check existing GitHub issues
 2. Review troubleshooting section
-3. Contact: s.sobolewski@hotmail.com
+3. Run `./test-api-v1.sh` to verify setup
+4. Contact: s.sobolewski@hotmail.com
+
+## 📜 Quick Reference Scripts
+
+- `QUICK_START.sh` - Start all services
+- `init-database.sh` - Initialize production database
+- `init-database-docker.sh` - Initialize Docker database
+- `test-api-v1.sh` - Test API v1 endpoints
+
 
 ---
 
-**Last Updated:** 2025-01-XX | **Version:** 1.0.0 | **Status:** Production Ready ✅
+**Last Updated**: 2025-01-24  
+**Author**: Cartesian School - Siergej Sobolewski  
+**Contact**: s.sobolewski@hotmail.com

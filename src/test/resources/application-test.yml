@@ -1,10 +1,12 @@
-  // src/test/resources/application-test.yml
-  spring:
-    sql:
-      init:
-        mode: always
-  rag:
-    provider:
-      embeddings: fake
-      chat: fake
-    embedding-dim: 1536
+spring:
+  sql:
+    init:
+      mode: always
+  ai:
+    enabled: false
+
+rag:
+  provider:
+    embeddings: fake
+    chat: fake
+  embedding-dim: 1536

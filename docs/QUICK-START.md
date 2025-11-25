@@ -128,6 +128,9 @@ curl http://localhost:8080/health
 3. Check: `openapi/RAG-API.yaml` - API specification
 4. Debug: Enable `NEXT_PUBLIC_API_DEBUG=true`
 
+
 ---
 
-**Next:** Open `RAG-INTEGRATION-SUMMARY.md` for full overview!
+**Last Updated**: 2025-01-24  
+**Author**: Cartesian School - Siergej Sobolewski  
+**Contact**: s.sobolewski@hotmail.com

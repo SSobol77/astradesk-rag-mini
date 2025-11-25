@@ -4,139 +4,57 @@ Complete documentation for the AstraDesk RAG Mini project.
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Quick Start
 
-### Quick Start
-- **[Quick Start Guide](QUICK-START.md)** - Get up and running in 5 minutes
-- **[Developer Guide](DEVELOPER_GUIDE.md)** - Comprehensive development guide
-- **[Environment Variables](.env.example)** - Configuration reference
-
----
-
-## 🏗️ Implementation Guides
-
-### Recent Improvements
-- **[Quick Wins Implementation](QUICK_WINS_IMPLEMENTATION.md)** - 10 production improvements
-- **[Implementation Checklist](IMPLEMENTATION_CHECKLIST.md)** - Verification steps
-- **[Implementation Complete](IMPLEMENTATION_COMPLETE.md)** - Summary report
-- **[Next Steps Complete](NEXT_STEPS_COMPLETE.md)** - Rate limiting, OpenTelemetry, integration tests
-- **[Documentation Fixes](DOCUMENTATION_FIXES.md)** - Consistency fixes applied
-
-### CI/CD
-- **[CI/CD Setup Guide](CI_CD_SETUP.md)** - GitHub Actions & GitLab CI/CD
-- **[CI/CD Complete](CI_CD_COMPLETE.md)** - Implementation summary
-- **[CI/CD Quick Reference](CI_CD_QUICK_REFERENCE.md)** - Quick commands
+- **[README.md](../README.md)** - Project overview and quick start
+- **[QUICK_START.sh](../QUICK_START.sh)** - Automated setup script
+- **[SCRIPTS_REFERENCE.md](../SCRIPTS_REFERENCE.md)** - All scripts documentation
 
 ---
 
-## 🎨 Frontend Documentation
+## 🗄️ Database
 
-### React/Next.js
-- **[Frontend Setup](RAG-FRONTEND-SETUP.md)** - Installation and configuration
-- **[Frontend Guide](RAG-FRONTEND-GUIDE.md)** - Component usage and API
-- **[Integration Summary](RAG-INTEGRATION-SUMMARY.md)** - Backend-Frontend integration
-- **[Generated Assets](FRONTEND-GENERATED-ASSETS.md)** - UI components and hooks
-
----
-
-## 📊 Project Status
-
-### Current State
-- **[Project Status](PROJECT_STATUS.md)** - Current state and roadmap
-- **[Fixes Applied](FIXES_APPLIED.md)** - Bug fixes and improvements
+- **[DATABASE_SETUP.md](../DATABASE_SETUP.md)** - Database initialization guide
+- **[init-database.sh](../init-database.sh)** - Production database setup
+- **[init-database-docker.sh](../init-database-docker.sh)** - Docker database setup
+- **[Database Tuning Guide](DATABASE_TUNING_GUIDE.md)** - Performance optimization
 
 ---
 
-## 📚 Documentation by Category
+## 🔧 API & Integration
 
-### Architecture & Design
-- [Developer Guide](DEVELOPER_GUIDE.md) - Architecture overview
-- [Integration Summary](RAG-INTEGRATION-SUMMARY.md) - System integration
-
-### Setup & Configuration
-- [Quick Start Guide](QUICK-START.md) - Initial setup
-- [Frontend Setup](RAG-FRONTEND-SETUP.md) - Frontend configuration
-- [CI/CD Setup](CI_CD_SETUP.md) - Pipeline configuration
-
-### Development
-- [Developer Guide](DEVELOPER_GUIDE.md) - Development workflow
-- [Frontend Guide](RAG-FRONTEND-GUIDE.md) - Frontend development
-- [Quick Wins Implementation](QUICK_WINS_IMPLEMENTATION.md) - Best practices
-
-### Operations
-- [CI/CD Complete](CI_CD_COMPLETE.md) - Deployment automation
-- [CI/CD Quick Reference](CI_CD_QUICK_REFERENCE.md) - Operations commands
-- [Implementation Checklist](IMPLEMENTATION_CHECKLIST.md) - Verification
-
-### Reference
-- [Project Status](PROJECT_STATUS.md) - Current state
-- [Fixes Applied](FIXES_APPLIED.md) - Change history
-- [Generated Assets](FRONTEND-GENERATED-ASSETS.md) - Component reference
+- **[API_MIGRATION_V1.md](API_MIGRATION_V1.md)** - API v1 migration guide
+- **[test-api-v1.sh](../test-api-v1.sh)** - API testing script
+- **[INTEGRATION_FIXES_2025_01_24.md](INTEGRATION_FIXES_2025_01_24.md)** - Recent fixes
+- **[INTEGRATION_AUDIT_REPORT.md](../INTEGRATION_AUDIT_REPORT.md)** - Integration audit
 
 ---
 
-## 🔍 Quick Links
+## 📦 Build & Deployment
 
-### For New Developers
-1. Start with [Quick Start Guide](QUICK-START.md)
-2. Read [Developer Guide](DEVELOPER_GUIDE.md)
-3. Review [Project Status](PROJECT_STATUS.md)
-
-### For Frontend Developers
-1. [Frontend Setup](RAG-FRONTEND-SETUP.md)
-2. [Frontend Guide](RAG-FRONTEND-GUIDE.md)
-3. [Generated Assets](FRONTEND-GENERATED-ASSETS.md)
-
-### For DevOps Engineers
-1. [CI/CD Setup](CI_CD_SETUP.md)
-2. [CI/CD Quick Reference](CI_CD_QUICK_REFERENCE.md)
-3. [Implementation Checklist](IMPLEMENTATION_CHECKLIST.md)
-
-### For Project Managers
-1. [Project Status](PROJECT_STATUS.md)
-2. [Implementation Complete](IMPLEMENTATION_COMPLETE.md)
-3. [Fixes Applied](FIXES_APPLIED.md)
+- **[BUILD_SUCCESS.md](../BUILD_SUCCESS.md)** - Build verification
+- **[DEPLOYMENT_SUCCESS.md](../DEPLOYMENT_SUCCESS.md)** - Deployment verification
+- **[VERIFICATION_CHECKLIST.md](../VERIFICATION_CHECKLIST.md)** - Complete checklist
+- **[CI/CD Setup](CI_CD_SETUP.md)** - CI/CD configuration
 
 ---
 
-## 📖 Reading Order
+## 📚 Development
 
-### Recommended Path for New Team Members
-
-1. **Overview** → [README.md](../README.md)
-2. **Quick Start** → [QUICK-START.md](QUICK-START.md)
-3. **Architecture** → [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md)
-4. **Current State** → [PROJECT_STATUS.md](PROJECT_STATUS.md)
-5. **Recent Changes** → [QUICK_WINS_IMPLEMENTATION.md](QUICK_WINS_IMPLEMENTATION.md)
-
-### For Specific Tasks
-
-**Setting up development environment:**
-- [Quick Start Guide](QUICK-START.md)
-- [Developer Guide](DEVELOPER_GUIDE.md)
-
-**Working with frontend:**
-- [Frontend Setup](RAG-FRONTEND-SETUP.md)
-- [Frontend Guide](RAG-FRONTEND-GUIDE.md)
-
-**Deploying the application:**
-- [CI/CD Setup](CI_CD_SETUP.md)
-- [CI/CD Quick Reference](CI_CD_QUICK_REFERENCE.md)
-
-**Understanding recent improvements:**
-- [Quick Wins Implementation](QUICK_WINS_IMPLEMENTATION.md)
-- [Implementation Complete](IMPLEMENTATION_COMPLETE.md)
+- **[Developer Guide](DEVELOPER_GUIDE.md)** - Comprehensive guide
+- **[Quick Start Guide](QUICK-START.md)** - 5-minute setup
+- **[Local Development Checklist](LOCAL_DEVELOPMENT_CHECKLIST.md)** - Setup checklist
 
 ---
 
-## 🆘 Getting Help
+## 📊 Status & Reports
 
-1. Check relevant documentation above
-2. Review [Troubleshooting](../README.md#-troubleshooting) in main README
-3. Check [Project Status](PROJECT_STATUS.md) for known issues
-4. Contact: s.sobolewski@hotmail.com
+- **[Project Status](PROJECT_STATUS.md)** - Current state
+- **[Fixes Applied](FIXES_APPLIED.md)** - Bug fixes
+- **[PERFORMANCE_SCALABILITY_AUDIT.md](../PERFORMANCE_SCALABILITY_AUDIT.md)** - Performance audit
 
 ---
 
-**Last Updated:** 2025-01-XX  
-**Documentation Version:** 1.0.0
+**Last Updated**: 2025-01-24  
+**Author**: Cartesian School - Siergej Sobolewski  
+**Contact**: s.sobolewski@hotmail.com

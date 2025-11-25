@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 
 @RestController
-@RequestMapping(path = "/ingest", produces = MediaType.APPLICATION_NDJSON_VALUE)
+@RequestMapping(path = "/api/v1/ingest", produces = MediaType.APPLICATION_NDJSON_VALUE)
 public class ZipController {
     private final ZipIngestService svc;
     public ZipController(ZipIngestService svc) { this.svc = svc; }

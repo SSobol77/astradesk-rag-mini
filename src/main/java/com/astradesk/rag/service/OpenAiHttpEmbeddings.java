@@ -4,6 +4,7 @@ package com.astradesk.rag.service;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -16,6 +17,7 @@ import java.util.List;
  * Używany, gdy rag.provider.embeddings=openai.
  */
 @Component
+@ConditionalOnProperty(name = "rag.provider.embeddings", havingValue = "openai")
 public class OpenAiHttpEmbeddings implements Embeddings {
     private final WebClient http;
     private final ObjectMapper mapper;

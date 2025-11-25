@@ -31,7 +31,7 @@ dependencies {
     implementation("com.github.pemistahl:lingua:1.2.2")
 
     // S3/MinIO (AWS SDK v2)
-    implementation("software.amazon.awssdk:s3:2.37.3")
+    implementation("software.amazon.awssdk:s3:2.38.2")
 
     // Spring AI - POPRAWNA WERSJA I REPOZYTORIUM
     implementation("org.springframework.ai:spring-ai-openai-spring-boot-starter:0.8.1") {

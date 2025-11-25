@@ -12,20 +12,28 @@ import java.io.InputStream;
 @Service
 public class S3StorageService {
     private final S3Client s3; private final String bucket;
-    public S3StorageService(S3Client s3, @Value("${s3.bucket}") String bucket) { this.s3 = s3; this.bucket = bucket; ensureBucket(); }
+    public S3StorageService(S3Client s3, @Value("${s3.bucket}") String bucket) {
+        this.s3 = s3;
+        this.bucket = bucket;
+    }
 
-    private void ensureBucket() {
-        try { s3.headBucket(HeadBucketRequest.builder().bucket(bucket).build()); }
-        catch (S3Exception e) { 
-            if (e instanceof NoSuchBucketException) {
-                s3.createBucket(CreateBucketRequest.builder().bucket(bucket).build()); 
-            }
+    // Ensure bucket exists when performing the first write. Avoids network calls during
+    // Spring context initialization so tests that don't configure S3 won't fail.
+    private void ensureBucketIfNecessary() {
+        try {
+            s3.headBucket(HeadBucketRequest.builder().bucket(bucket).build());
+        } catch (NoSuchBucketException e) {
+            s3.createBucket(CreateBucketRequest.builder().bucket(bucket).build());
+        } catch (Exception e) {
+            // Could be SdkClientException (connectivity) or other AWS errors. In that case,
+            // do not fail application startup — let putObject surface errors if critical.
         }
     }
 
     public String put(String key, InputStream data, long size, String contentType) {
+        ensureBucketIfNecessary();
         s3.putObject(PutObjectRequest.builder().bucket(bucket).key(key).contentType(contentType).build(),
-                RequestBody.fromInputStream(data, size));
+            RequestBody.fromInputStream(data, size));
         return key;
     }
 }

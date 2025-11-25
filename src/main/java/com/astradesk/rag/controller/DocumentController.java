@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "/docs", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = "/api/v1/docs", produces = MediaType.APPLICATION_JSON_VALUE)
 public class DocumentController {
     private final RagService rag;
     public DocumentController(RagService rag) { this.rag = rag; }

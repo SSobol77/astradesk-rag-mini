@@ -1,45 +1,24 @@
-## Makefile - helper targets for local development
-# Use `make build-docker` to run Gradle inside a JDK 21 container (no system Java change)
-
-.PHONY: build build-docker test test-docker clean
-
-BUILD_IMAGE ?= eclipse-temurin:21-jdk
-
-build:
-	./gradlew clean build
-
-test:
-	./gradlew test
-
-clean:
-	./gradlew clean
-
-build-docker:
-	@echo "Running Gradle build inside Docker (JDK 21)..."
-	./scripts/build-in-docker.sh ./gradlew clean build
-
-test-docker:
-	@echo "Running Gradle tests inside Docker (JDK 21)..."
-	./scripts/build-in-docker.sh ./gradlew test
-.PHONY: help build test clean run docker-build docker-run docker-stop deploy
+.PHONY: help build test clean run docker-build docker-run docker-stop build-in-docker test-in-docker deploy
 
 help:
 	@echo "AstraDesk RAG Mini - Makefile Commands"
 	@echo "======================================"
-	@echo "build          - Build the project"
-	@echo "test           - Run tests"
-	@echo "clean          - Clean build artifacts"
-	@echo "run            - Run the application"
-	@echo "docker-build   - Build Docker image"
-	@echo "docker-run     - Run Docker container"
-	@echo "docker-stop    - Stop Docker container"
-	@echo "deploy         - Deploy to production"
+	@echo "build            - Build the project"
+	@echo "test             - Run tests"
+	@echo "clean            - Clean build artifacts"
+	@echo "run              - Run the application"
+	@echo "docker-build     - Build Docker image"
+	@echo "docker-run       - Run with docker-compose"
+	@echo "docker-stop      - Stop docker-compose"
+	@echo "build-in-docker  - Build inside Docker (JDK 21)"
+	@echo "test-in-docker   - Test inside Docker (JDK 21)"
+	@echo "deploy           - Deploy to production"
 
 build:
 	./gradlew clean build -x test
 
 test:
-	./gradlew test --tests com.astradesk.rag.service.RagServiceTest
+	./gradlew test
 
 clean:
 	./gradlew clean
@@ -57,7 +36,15 @@ docker-run:
 docker-stop:
 	docker-compose down
 
+build-in-docker:
+	@echo "Building inside Docker (JDK 21)..."
+	@docker run --rm -v "$$PWD":/workspace -w /workspace eclipse-temurin:21-jdk ./gradlew clean build -x test
+
+test-in-docker:
+	@echo "Testing inside Docker (JDK 21)..."
+	@docker run --rm -v "$$PWD":/workspace -w /workspace eclipse-temurin:21-jdk ./gradlew test
+
 deploy:
 	@echo "Deploying to production..."
-	docker build -t astradesk-rag:$(shell git rev-parse --short HEAD) .
-	docker push astradesk-rag:$(shell git rev-parse --short HEAD)
+	docker build -t astradesk-rag:$$(git rev-parse --short HEAD) .
+	docker push astradesk-rag:$$(git rev-parse --short HEAD)

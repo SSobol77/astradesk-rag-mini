@@ -1,5 +1,4 @@
-// src/test/java/astradesk/rag/FakeChat.java
-package astradesk.rag;
+package com.astradesk.rag;
 
 import com.astradesk.rag.service.ChatLLM;
 import java.util.List;

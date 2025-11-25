@@ -3,6 +3,7 @@ package com.astradesk.rag.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -11,6 +12,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.List;
 
 @Component
+@ConditionalOnProperty(name = "rag.provider.chat", havingValue = "openai")
 public class OpenAiHttpChat implements ChatLLM {
     private final WebClient http;
     private final String model;

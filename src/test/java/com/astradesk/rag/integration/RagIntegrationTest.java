@@ -33,6 +33,8 @@ class RagIntegrationTest {
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("rag.provider.embeddings", () -> "fake");
         registry.add("rag.provider.chat", () -> "fake");
+        // Ensure Spring AI auto-configuration is disabled during tests
+        registry.add("spring.ai.enabled", () -> "false");
     }
 
     @Autowired
